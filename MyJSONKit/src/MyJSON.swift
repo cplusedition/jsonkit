@@ -280,13 +280,13 @@ public struct MyJSONObject {
 /// Some shortcuts.
 public extension MyJSONObject {
     /// @return A copy of [String] if value is an array of String, otherwise nil
-    public func stringArray(_ key: String) -> [String]? {
+    func stringArray(_ key: String) -> [String]? {
         return U.stringArray(_value[key])
     }
     
     /// Set value at given key to the given value. Remove the entry if given value is nil.
     @discardableResult
-    public func put(_ key: String, _ value: [String]?) -> MyJSONObject {
+    func put(_ key: String, _ value: [String]?) -> MyJSONObject {
         if let array = value {
             return put(key, sanitized: NSMutableArray(array: array))
         }
@@ -294,41 +294,41 @@ public extension MyJSONObject {
     }
     
     @discardableResult
-    public func put(_ keyvalues: [String: String]) -> MyJSONObject {
+    func put(_ keyvalues: [String: String]) -> MyJSONObject {
         _value.addEntries(from: keyvalues)
         return self
     }
 }
 
 public extension MyJSONObject {
-    public static func from(_ bytes: [UInt8]) throws -> MyJSONObject {
+    static func from(_ bytes: [UInt8]) throws -> MyJSONObject {
         guard let ret = try MyJSONValue.from(bytes).object else {
             throw JSONException.InvalidJSONObject
         }
         return ret
     }
     
-    public static func from(_ data: Data) throws -> MyJSONObject {
+    static func from(_ data: Data) throws -> MyJSONObject {
         guard let ret = try MyJSONValue.from(data).object else {
             throw JSONException.InvalidJSONObject
         }
         return ret
     }
-    public static func from(string: String) throws -> MyJSONObject {
+    static func from(string: String) throws -> MyJSONObject {
         guard let ret = try MyJSONValue.from(string: string).object else {
             throw JSONException.InvalidJSONObject
         }
         return ret
     }
     
-    public static func from(path: String) throws -> MyJSONObject {
+    static func from(path: String) throws -> MyJSONObject {
         guard let ret = try MyJSONValue.from(path: path).object else {
             throw JSONException.InvalidJSONObject
         }
         return ret
     }
     
-    public static func from(_ stream: InputStream) throws -> MyJSONObject {
+    static func from(_ stream: InputStream) throws -> MyJSONObject {
         guard let ret = try MyJSONValue.from(stream).object else {
             throw JSONException.InvalidJSONObject
         }
@@ -660,7 +660,7 @@ public struct MyJSONArray {
 /// Some shortcuts
 public extension MyJSONArray {
     /// @return A copy of [String] if value is an array of String, otherwise nil
-    public func stringArray(_ index: Int) -> [String]? {
+    func stringArray(_ index: Int) -> [String]? {
         if index >= 0 && index < _value.count {
             return U.stringArray(_value[index])
         }
@@ -669,7 +669,7 @@ public extension MyJSONArray {
     
     /// Add given value to the JSON array, add a NsNull object if value is nil.
     @discardableResult
-    public func put(_ value: [String]?) -> MyJSONArray {
+    func put(_ value: [String]?) -> MyJSONArray {
         if let array = value {
             return put(sanitized: NSMutableArray(array: array))
         }
@@ -679,35 +679,35 @@ public extension MyJSONArray {
 
 /// Factory constructors
 public extension MyJSONArray {
-    public static func from(_ bytes: [UInt8]) throws -> MyJSONArray {
+    static func from(_ bytes: [UInt8]) throws -> MyJSONArray {
         if let ret = try MyJSONValue.from(bytes).array {
             return ret
         }
         throw JSONException.InvalidJSONArray
     }
     
-    public static func from(_ data: Data) throws-> MyJSONArray {
+    static func from(_ data: Data) throws-> MyJSONArray {
         if let ret = try MyJSONValue.from(data).array {
             return ret
         }
         throw JSONException.InvalidJSONArray
     }
 
-    public static func from(string: String) throws -> MyJSONArray {
+    static func from(string: String) throws -> MyJSONArray {
         if let ret = try MyJSONValue.from(string: string).array {
             return ret
         }
         throw JSONException.InvalidJSONArray
     }
     
-    public static func from(path: String) throws -> MyJSONArray {
+    static func from(path: String) throws -> MyJSONArray {
         if let ret = try MyJSONValue.from(path: path).array {
             return ret
         }
         throw JSONException.InvalidJSONArray
     }
     
-    public static func from(_ stream: InputStream) throws -> MyJSONArray {
+    static func from(_ stream: InputStream) throws -> MyJSONArray {
         if let ret = try MyJSONValue.from(stream).array {
             return ret
         }
@@ -988,11 +988,11 @@ public struct MyJSONValue {
 
 /// Factory constructors.
 public extension MyJSONValue {
-    public static func isValid(_ value: Any) -> Bool {
+    static func isValid(_ value: Any) -> Bool {
         return JSONSerialization.isValidJSONObject(value)
     }
     
-    public static func from(path: String) throws -> MyJSONValue {
+    static func from(path: String) throws -> MyJSONValue {
         guard let stream = InputStream(fileAtPath: path) else {
             throw JSONException.InvalidJSONValue
         }
@@ -1001,25 +1001,25 @@ public extension MyJSONValue {
         return try from(stream)
     }
     
-    public static func from(string: String) throws -> MyJSONValue {
+    static func from(string: String) throws -> MyJSONValue {
         guard let data = string.data(using: .utf8) else {
             throw JSONException.InvalidCharacterEncoding
         }
         return try from(data)
     }
     
-    public static func from(_ bytes: [UInt8]) throws -> MyJSONValue {
+    static func from(_ bytes: [UInt8]) throws -> MyJSONValue {
         return try from(Data(bytes))
     }
     
-    public static func from(_ stream: InputStream) throws -> MyJSONValue {
+    static func from(_ stream: InputStream) throws -> MyJSONValue {
         let object: Any = try JSONSerialization.jsonObject(
             with: stream,
             options: [.allowFragments, .mutableContainers])
         return MyJSONValue(sanitized: object)
     }
     
-    public static func from(_ data: Data /* , readonly: Bool = false */) throws -> MyJSONValue {
+    static func from(_ data: Data /* , readonly: Bool = false */) throws -> MyJSONValue {
         let object: Any = try JSONSerialization.jsonObject(
             with: data,
             options: [.allowFragments, .mutableContainers])
