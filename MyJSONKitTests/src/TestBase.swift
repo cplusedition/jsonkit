@@ -29,15 +29,15 @@ open class TestBase : XCTestCase {
         }
     }
 
-    func subtest(_ test: () throws -> Void) throws {
+    func subtest(_ msg: String = "", _ test: () throws -> Void) throws {
         try test()
     }
     
-    func subtest(_ test: () -> Void) {
+    func subtest(_ msg: String = "", _ test: () -> Void) {
         test()
     }
 
-    func testResPath(rpath: String? = nil) -> String {
+    func testResPath(_ rpath: String? = nil) -> String {
         guard var url = Bundle(for: TestBase.self).resourceURL?.appendingPathComponent("resources.bundle", isDirectory: true) else {
             preconditionFailure()
         }
@@ -47,8 +47,8 @@ open class TestBase : XCTestCase {
         return url.path
     }
     
-    func testResData(rpath: String? = nil) throws -> Data {
-        guard let data = FileManager.default.contents(atPath: testResPath(rpath: rpath)) else {
+    func testResData(_ rpath: String? = nil) throws -> Data {
+        guard let data = FileManager.default.contents(atPath: testResPath(rpath)) else {
             preconditionFailure()
         }
         return data

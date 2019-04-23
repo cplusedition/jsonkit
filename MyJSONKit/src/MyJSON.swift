@@ -23,6 +23,7 @@ enum JSONException: Error {
     case InvalidJSONObject
     case InvalidJSONArray
     case InvalidJSONValue
+    case IOException
 }
 
 // //////////////////////////////////////////////////////////////////////
@@ -117,48 +118,97 @@ public struct MyJSONObject {
         return nil
     }
     
-    /// @return a String if value is a string type, otherwise def
-    public func string(_ key: String, _ def: String? = nil) -> String? {
+    /// @return a String if value is a string type, otherwise nil.
+    public func string(_ key: String) -> String? {
+        if let value = _value[key] as? String {
+            return value
+        }
+        return nil
+    }
+    
+    /// @return a Double value if value is a double, integer or boolean type, otherwise nil.
+    public func double(_ key: String) -> Double? {
+        if let value = _value[key] as? NSNumber {
+            return value.doubleValue
+        }
+        return nil
+    }
+    
+    /// @return a Int64 (possiblty truncated) value if value is a double, integer or boolean type, otherwise nil.
+    public func int64(_ key: String) -> Int64? {
+        if let value = _value[key] as? NSNumber {
+            return value.int64Value
+        }
+        return nil
+    }
+    
+    /// @return a Int32 (possiblty truncated) value if value is a double, integer or boolean type, otherwise nil.
+    public func int32(_ key: String) -> Int32? {
+        if let value = _value[key] as? NSNumber {
+            return value.int32Value
+        }
+        return nil
+    }
+    
+    /// @return a Int (possiblty truncated) value if value is a double, integer or boolean type, otherwise nil.
+    public func int(_ key: String) -> Int? {
+        if let value = _value[key] as? NSNumber {
+            return value.intValue
+        }
+        return nil
+    }
+    
+    /// @return a Bool value if value is a boolean type, otherwise nil.
+    public func bool(_ key: String) -> Bool? {
+        if let value = _value[key] as? NSNumber,
+            U.isBool(value) {
+            return value.boolValue
+        }
+        return nil
+    }
+    
+    /// @return a String if value is a string type, otherwise def.
+    public func string(_ key: String, _ def: String) -> String {
         if let value = _value[key] as? String {
             return value
         }
         return def
     }
     
-    /// @return a Double value if value is a double, integer or boolean type, otherwise def
-    public func double(_ key: String, _ def: Double? = nil) -> Double? {
+    /// @return a Double value if value is a double, integer or boolean type, otherwise def.
+    public func double(_ key: String, _ def: Double) -> Double {
         if let value = _value[key] as? NSNumber {
             return value.doubleValue
         }
         return def
     }
     
-    /// @return a Int64 (possiblty truncated) value if value is a double, integer or boolean type, otherwise def
-    public func int64(_ key: String, _ def: Int64? = nil) -> Int64? {
+    /// @return a Int64 (possiblty truncated) value if value is a double, integer or boolean type, otherwise def.
+    public func int64(_ key: String, _ def: Int64) -> Int64 {
         if let value = _value[key] as? NSNumber {
             return value.int64Value
         }
         return def
     }
     
-    /// @return a Int32 (possiblty truncated) value if value is a double, integer or boolean type, otherwise def
-    public func int32(_ key: String, _ def: Int32? = nil) -> Int32? {
+    /// @return a Int32 (possiblty truncated) value if value is a double, integer or boolean type, otherwise def.
+    public func int32(_ key: String, _ def: Int32) -> Int32 {
         if let value = _value[key] as? NSNumber {
             return value.int32Value
         }
         return def
     }
     
-    /// @return a Int (possiblty truncated) value if value is a double, integer or boolean type, otherwise def
-    public func int(_ key: String, _ def: Int? = nil) -> Int? {
+    /// @return a Int (possiblty truncated) value if value is a double, integer or boolean type, otherwise def.
+    public func int(_ key: String, _ def: Int) -> Int {
         if let value = _value[key] as? NSNumber {
             return value.intValue
         }
         return def
     }
     
-    /// @return a Bool value if value is a boolean type, otherwise def
-    public func bool(_ key: String, _ def: Bool? = nil) -> Bool? {
+    /// @return a Bool value if value is a boolean type, otherwise def.
+    public func bool(_ key: String, _ def: Bool) -> Bool {
         if let value = _value[key] as? NSNumber,
             U.isBool(value) {
             return value.boolValue
@@ -423,8 +473,63 @@ public struct MyJSONArray {
         return nil
     }
     
-    /// @return a String if value is a string type, otherwise def
-    public func string(_ index: Int, _ def: String? = nil) -> String? {
+    /// @return a String if value is a string type, otherwise nil.
+    public func string(_ index: Int) -> String? {
+        if index >= 0 && index < _value.count,
+            let ret = _value[index] as? String {
+            return ret
+        }
+        return nil
+    }
+    
+    /// @return a Double value if value is a double, integer or boolean type, otherwise nil.
+    public func double(_ index: Int) -> Double? {
+        if index >= 0 && index < _value.count,
+            let value = _value[index] as? NSNumber {
+            return value.doubleValue
+        }
+        return nil
+    }
+    
+    /// @return a Int64 (possiblty truncated) value if value is a double, integer or boolean type, otherwise nil.
+    public func int64(_ index: Int) -> Int64? {
+        if index >= 0 && index < _value.count,
+            let value = _value[index] as? NSNumber {
+            return value.int64Value
+        }
+        return nil
+    }
+    
+    /// @return a Int32 (possiblty truncated) value if value is a double, integer or boolean type, otherwise nil.
+    public func int32(_ index: Int) -> Int32? {
+        if index >= 0 && index < _value.count,
+            let value = _value[index] as? NSNumber {
+            return value.int32Value
+        }
+        return nil
+    }
+    
+    /// @return a Int (possiblty truncated) value if value is a double, integer or boolean type, otherwise nil.
+    public func int(_ index: Int) -> Int? {
+        if index >= 0 && index < _value.count,
+            let value = _value[index] as? NSNumber {
+            return value.intValue
+        }
+        return nil
+    }
+    
+    /// @return a Bool value if value is a boolean type, otherwise nil.
+    public func bool(_ index: Int) -> Bool? {
+        if index >= 0 && index < _value.count,
+            let value = _value[index] as? NSNumber,
+            U.isBool(value) {
+            return value.boolValue
+        }
+        return nil
+    }
+    
+    /// @return a String if value is a string type, otherwise def.
+    public func string(_ index: Int, _ def: String) -> String {
         if index >= 0 && index < _value.count,
             let ret = _value[index] as? String {
             return ret
@@ -432,8 +537,8 @@ public struct MyJSONArray {
         return def
     }
     
-    /// @return a Double value if value is a double, integer or boolean type, otherwise def
-    public func double(_ index: Int, _ def: Double? = nil) -> Double? {
+    /// @return a Double value if value is a double, integer or boolean type, otherwise def.
+    public func double(_ index: Int, _ def: Double) -> Double {
         if index >= 0 && index < _value.count,
             let value = _value[index] as? NSNumber {
             return value.doubleValue
@@ -441,8 +546,8 @@ public struct MyJSONArray {
         return def
     }
     
-    /// @return a Int64 (possiblty truncated) value if value is a double, integer or boolean type, otherwise def
-    public func int64(_ index: Int, _ def: Int64? = nil) -> Int64? {
+    /// @return a Int64 (possiblty truncated) value if value is a double, integer or boolean type, otherwise def.
+    public func int64(_ index: Int, _ def: Int64) -> Int64 {
         if index >= 0 && index < _value.count,
             let value = _value[index] as? NSNumber {
             return value.int64Value
@@ -450,8 +555,8 @@ public struct MyJSONArray {
         return def
     }
     
-    /// @return a Int32 (possiblty truncated) value if value is a double, integer or boolean type, otherwise def
-    public func int32(_ index: Int, _ def: Int32? = nil) -> Int32? {
+    /// @return a Int32 (possiblty truncated) value if value is a double, integer or boolean type, otherwise def.
+    public func int32(_ index: Int, _ def: Int32) -> Int32 {
         if index >= 0 && index < _value.count,
             let value = _value[index] as? NSNumber {
             return value.int32Value
@@ -459,8 +564,8 @@ public struct MyJSONArray {
         return def
     }
     
-    /// @return a Int (possiblty truncated) value if value is a double, integer or boolean type, otherwise def
-    public func int(_ index: Int, _ def: Int? = nil) -> Int? {
+    /// @return a Int (possiblty truncated) value if value is a double, integer or boolean type, otherwise def.
+    public func int(_ index: Int, _ def: Int) -> Int {
         if index >= 0 && index < _value.count,
             let value = _value[index] as? NSNumber {
             return value.intValue
@@ -468,8 +573,8 @@ public struct MyJSONArray {
         return def
     }
     
-    /// @return a Bool value if value is a boolean type, otherwise def
-    public func bool(_ index: Int, _ def: Bool? = nil) -> Bool? {
+    /// @return a Bool value if value is a boolean type, otherwise def.
+    public func bool(_ index: Int, _ def: Bool) -> Bool {
         if index >= 0 && index < _value.count,
             let value = _value[index] as? NSNumber,
             U.isBool(value) {
@@ -994,7 +1099,7 @@ public extension MyJSONValue {
     
     static func from(path: String) throws -> MyJSONValue {
         guard let stream = InputStream(fileAtPath: path) else {
-            throw JSONException.InvalidJSONValue
+            throw JSONException.IOException
         }
         stream.open()
         defer { stream.close() }
@@ -1019,6 +1124,7 @@ public extension MyJSONValue {
         return MyJSONValue(sanitized: object)
     }
     
+    /// See JSONSerialization.jsonObject() description.
     static func from(_ data: Data /* , readonly: Bool = false */) throws -> MyJSONValue {
         let object: Any = try JSONSerialization.jsonObject(
             with: data,
@@ -1058,12 +1164,14 @@ public struct MyJSONKeyValueSequence: Sequence, IteratorProtocol {
 // //////////////////////////////////////////////////////////////////////
 
 fileprivate struct U {
+    
+    // See JSONSerialization.data() description.
     fileprivate static func serializeAsData(_ value: Any, pretty: Bool = false) throws -> Data {
         return try JSONSerialization.data(withJSONObject: value, options: (pretty ? [.prettyPrinted]: []))
     }
     
     fileprivate static func serializeAsString(_ value: Any, pretty: Bool = false) throws -> String {
-        let data = try JSONSerialization.data(withJSONObject: value, options: (pretty ? [.prettyPrinted]: []))
+        let data = try serializeAsData(value, pretty: pretty)
         guard let ret = String(data: data, encoding: .utf8) else {
             throw JSONException.InvalidCharacterEncoding
         }

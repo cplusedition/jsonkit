@@ -142,7 +142,7 @@ class TestMyJSON01: TestBase {
     
     /// Simple test for MyJSONObject parser by reading test01.json. */
     func testParseFontsJsonWithJSONSerialization01() throws {
-        let data = try testResData(rpath: "test01.json")
+        let data = try testResData("myjson/test01.json")
         let json = try JSONSerialization.jsonObject(with: data, options: [.mutableContainers, .mutableLeaves] )
         DEBUG("\(json)")
         let dict = (json as! NSDictionary)
@@ -152,7 +152,7 @@ class TestMyJSON01: TestBase {
     
     /// Simple test for MyJSONObject parser by reading test01.json with MyJSONObject. */
     func testParseFontsJsonWithMyJSON01() throws {
-        let data = try testResData(rpath: "test01.json")
+        let data = try testResData("myjson/test01.json")
         let json = try MyJSONObject.from(data /*, readonly: true */)
         if DEBUGGING {
             let a = json["cats0"]
@@ -170,7 +170,7 @@ class TestMyJSON01: TestBase {
     
     /// Simple test for MyJSONObject serializer with test01.json. */
     func testSerializeJSON01() throws {
-        let data = try testResData(rpath: "test01.json")
+        let data = try testResData("myjson/test01.json")
         let json = try MyJSONObject.from(data)
         if DEBUGGING {
             let a = json["fonts0"]?["Antonio"]
@@ -186,7 +186,7 @@ class TestMyJSON01: TestBase {
     
     /// More complete test for coverage.
     func testSerializeJSON02() throws {
-        let filepath = testResPath(rpath: "test01.json")
+        let filepath = testResPath("myjson/test01.json")
         let json = try MyJSONObject.from(path: filepath)
         XCTAssertEqual(try json.serializeAsString(), try MyJSONObject.from(path: filepath).serializeAsString())
         let jsonobject = json.object("fonts0")!.object("AdventPro")!
@@ -498,7 +498,7 @@ class TestMyJSON01: TestBase {
         XCTAssertNil(json.at("k5")?.object)
     }
     
-    /// Check MyJSONObject.optXXX() accessors.
+    /// Check MyJSONObject.xxx(key, def) accessors.
     func testAccessors03() throws {
         let json = MyJSONObject()
         let nullable: String? = nil
@@ -508,21 +508,21 @@ class TestMyJSON01: TestBase {
         json.object("object")?.put("k1", MyJSONObject())
         DEBUG("# json: \(try! json.serializeAsString(pretty: true))")
         // Integer
-        XCTAssertEqual(nil, json.bool("k1"))
+        XCTAssertEqual(false, json.bool("k1", false))
         XCTAssertEqual(1, json.int("k1", 123))
         XCTAssertEqual(1, json.int32("k1", 123))
         XCTAssertEqual(1, json.int64("k1", 123))
         XCTAssertEqual(1.0, json.double("k1", 123.0))
         XCTAssertEqual("", json.string("k1", ""))
         // String
-        XCTAssertEqual(nil, json.bool("k2"))
+        XCTAssertEqual(true, json.bool("k2", true))
         XCTAssertEqual(123, json.int("k2", 123))
         XCTAssertEqual(123, json.int32("k2", 123))
         XCTAssertEqual(123, json.int64("k2", 123))
         XCTAssertEqual(123.0, json.double("k2", 123.0))
         XCTAssertEqual("a", json.string("k2", ""))
         // Bool
-        XCTAssertEqual(true, json.bool("k3"))
+        XCTAssertEqual(true, json.bool("k3", false))
         XCTAssertEqual(1, json.int("k3", 123))
         XCTAssertEqual(1, json.int32("k3", 123))
         XCTAssertEqual(1, json.int64("k3", 123))
@@ -543,12 +543,71 @@ class TestMyJSON01: TestBase {
         XCTAssertEqual(999.9, json.double("k5", 999.9))
         XCTAssertEqual("", json.string("k5", ""))
         // Not exists
-        XCTAssertEqual(false, json.bool("notexists", false))
+        XCTAssertEqual(true, json.bool("notexists", true))
         XCTAssertEqual(999, json.int("notexists", 999))
         XCTAssertEqual(999, json.int32("notexists", 999))
         XCTAssertEqual(999, json.int64("notexists", 999))
         XCTAssertEqual(999.9, json.double("notexists", 999.9))
         XCTAssertEqual("", json.string("notexists", ""))
+    }
+    
+    /// Check MyJSONObject.xxx(key) accessors.
+    func testAccessors04() throws {
+        let json = MyJSONObject()
+        let nullable: String? = nil
+        json.put("k1", 1).put("k2", "a").put("k3", true).put("k4", 12.34).put("k5", NSNull()).put("nullable", nullable)
+        json.put("array", MyJSONArray()).put("object", MyJSONObject())
+        json.array("array")?.put(1).put(MyJSONArray([1, 2, 3])).put(nullable)
+        json.object("object")?.put("k1", MyJSONObject())
+        DEBUG("# json: \(try! json.serializeAsString(pretty: true))")
+        // Integer
+        XCTAssertEqual(nil, json.bool("k1"))
+        XCTAssertEqual(1, json.int("k1"))
+        XCTAssertEqual(1, json.int32("k1"))
+        XCTAssertEqual(1, json.int64("k1"))
+        XCTAssertEqual(1.0, json.double("k1"))
+        XCTAssertEqual(nil, json.string("k1"))
+        XCTAssertEqual(false, json.isNull("k1"))
+        // String
+        XCTAssertEqual(nil, json.bool("k2"))
+        XCTAssertEqual(nil, json.int("k2"))
+        XCTAssertEqual(nil, json.int32("k2"))
+        XCTAssertEqual(nil, json.int64("k2"))
+        XCTAssertEqual(nil, json.double("k2"))
+        XCTAssertEqual("a", json.string("k2"))
+        XCTAssertEqual(false, json.isNull("k2"))
+        // Bool
+        XCTAssertEqual(true, json.bool("k3"))
+        XCTAssertEqual(1, json.int("k3"))
+        XCTAssertEqual(1, json.int32("k3"))
+        XCTAssertEqual(1, json.int64("k3"))
+        XCTAssertEqual(1.0, json.double("k3"))
+        XCTAssertEqual(nil, json.string("k3"))
+        XCTAssertEqual(false, json.isNull("k3"))
+        // Double
+        XCTAssertEqual(nil, json.bool("k4"))
+        XCTAssertEqual(12, json.int("k4"))
+        XCTAssertEqual(12, json.int32("k4"))
+        XCTAssertEqual(12, json.int64("k4"))
+        XCTAssertEqual(12.34, json.double("k4"))
+        XCTAssertEqual(nil, json.string("k4"))
+        XCTAssertEqual(false, json.isNull("k4"))
+        // Null
+        XCTAssertEqual(nil, json.bool("k5"))
+        XCTAssertEqual(nil, json.int("k5"))
+        XCTAssertEqual(nil, json.int32("k5"))
+        XCTAssertEqual(nil, json.int64("k5"))
+        XCTAssertEqual(nil, json.double("k5"))
+        XCTAssertEqual(nil, json.string("k5"))
+        XCTAssertEqual(true, json.isNull("k5"))
+        // Not exists
+        XCTAssertEqual(nil, json.bool("notexists"))
+        XCTAssertEqual(nil, json.int("notexists"))
+        XCTAssertEqual(nil, json.int32("notexists"))
+        XCTAssertEqual(nil, json.int64("notexists"))
+        XCTAssertEqual(nil, json.double("notexists"))
+        XCTAssertEqual(nil, json.string("notexists"))
+        XCTAssertEqual(false, json.isNull("notexists"))
     }
     
     func testAccessorArray01() throws {
@@ -595,6 +654,58 @@ class TestMyJSON01: TestBase {
         XCTAssertEqual(nil, array.int64(999))
         XCTAssertEqual(nil, array.double(999))
         XCTAssertEqual(nil, array.string(999))
+    }
+    
+    func testAccessorArray02() throws {
+        let array = MyJSONArray().put(1).put("a").put(true).put(12.34).put(NSNull())
+        // Integer
+        XCTAssertEqual(true, array.bool(0, true))
+        XCTAssertEqual(1, array.int(0, 123))
+        XCTAssertEqual(1, array.int32(0, 123))
+        XCTAssertEqual(1, array.int64(0, 123))
+        XCTAssertEqual(1.0, array.double(0, 123.0))
+        XCTAssertEqual("abc", array.string(0, "abc"))
+        XCTAssertEqual(false, array.isNull(0))
+        // String
+        XCTAssertEqual(false, array.bool(1, false))
+        XCTAssertEqual(123, array.int(1, 123))
+        XCTAssertEqual(123, array.int32(1, 123))
+        XCTAssertEqual(123, array.int64(1, 123))
+        XCTAssertEqual(123.0, array.double(1, 123.0))
+        XCTAssertEqual("a", array.string(1, "abc"))
+        XCTAssertEqual(false, array.isNull(1))
+        // Bool
+        XCTAssertEqual(true, array.bool(2, true))
+        XCTAssertEqual(1, array.int(2, 123))
+        XCTAssertEqual(1, array.int32(2, 123))
+        XCTAssertEqual(1, array.int64(2, 123))
+        XCTAssertEqual(1.0, array.double(2, 123.0))
+        XCTAssertEqual("abc", array.string(2, "abc"))
+        XCTAssertEqual(false, array.isNull(2))
+        // Double
+        XCTAssertEqual(false, array.bool(3, false))
+        XCTAssertEqual(12, array.int(3, 123))
+        XCTAssertEqual(12, array.int32(3, 123))
+        XCTAssertEqual(12, array.int64(3, 123))
+        XCTAssertEqual(12.34, array.double(3, 123.0))
+        XCTAssertEqual("abc", array.string(3, "abc"))
+        XCTAssertEqual(false, array.isNull(3))
+        // Null
+        XCTAssertEqual(true, array.bool(4, true))
+        XCTAssertEqual(123, array.int(4, 123))
+        XCTAssertEqual(123, array.int32(4, 123))
+        XCTAssertEqual(123, array.int64(4, 123))
+        XCTAssertEqual(123.0, array.double(4, 123.0))
+        XCTAssertEqual("abc", array.string(4, "abc"))
+        XCTAssertEqual(true, array.isNull(4))
+        // Not exists
+        XCTAssertEqual(false, array.bool(999, false))
+        XCTAssertEqual(123, array.int(999, 123))
+        XCTAssertEqual(123, array.int32(999, 123))
+        XCTAssertEqual(123, array.int64(999, 123))
+        XCTAssertEqual(123.0, array.double(999, 123.0))
+        XCTAssertEqual("abc", array.string(999, "abc"))
+        XCTAssertEqual(false, array.isNull(5))
     }
     
     /// Basic test to check that put methods works.
@@ -659,7 +770,7 @@ class TestMyJSON01: TestBase {
     }
     
     func testValues01() throws {
-        let data = try testResData(rpath: "test01.json")
+        let data = try testResData("myjson/test01.json")
         let json = try MyJSONObject.from(data)
         let fonts0 = json["fonts0"]
         XCTAssertNotNil(fonts0)
@@ -686,82 +797,42 @@ class TestMyJSON01: TestBase {
         XCTAssertEqual(14, count)
     }
     
+    /// Misc tests for coverage.
     func testCoverage01() throws {
-        XCTAssertEqual(true, MyJSONValue(true).bool)
-        XCTAssertEqual(false, MyJSONValue(false).bool)
-        XCTAssertEqual(123, MyJSONValue(Int32(123)).int)
-        XCTAssertNil(MyJSONValue(Int32(123)).array)
-        XCTAssertEqual(-123, MyJSONValue(NSNumber(value: -123)).int)
-        XCTAssertEqual("test", MyJSONValue("test" as NSString).string)
-        XCTAssertNil(MyJSONValue("test" as NSString).at(0))
-        XCTAssertNil(MyJSONValue("test" as NSString).at(0))
-        let array = MyJSONArray()
-        array.put(1)
-        array.put(2)
-        array.put(true)
-        let b:Bool? = nil
-        array.put(b) // 3
-        array.put(Int32(32))
-        array.put(Int64(64))
-        array.put(1.23)
-        array.put(NSNumber(value: 123))
-        array.put("nsstring" as NSString)
-        array.put(MyJSONObject())
-        XCTAssertEqual(1, array[0]?.int)
-        XCTAssertEqual(true, array[2]?.bool)
-        XCTAssertEqual(true, array[3]?.isNull)
-        XCTAssertEqual(32, array[4]?.int)
-        XCTAssertEqual(Int64(64), array[5]?.int64)
-        XCTAssertEqual(1.23, array[6]?.double)
-        XCTAssertEqual(123, array[7]?.int)
-        XCTAssertEqual("nsstring", array[8]?.string)
-        XCTAssertTrue(array[9]!.isObject)
-        XCTAssertEqual(10, array.count)
-        XCTAssertEqual(0, MyJSONObject().count)
-        // XCTAssertThrowsError(try JSONValue("test").put("123"))
-        try XCTAssertThrowsError(array.put(100, 123))
-    }
-    
-    func testCoverage02() throws {
-        let data = try testResData(rpath: "test01.json")
-        let json = try MyJSONObject.from(data)
-        let fonts0 = json.object("fonts0")!
-        let jsonobject = fonts0.object("AdventPro")!
-        let jsonarray = jsonobject.array("fontfaces")!
-        let stringarray = jsonobject.stringArray("styles")!
-        XCTAssertEqual(stringarray, jsonobject["styles"]!.stringArray!)
-        XCTAssertNil(jsonobject["notexists"])
-        XCTAssertNil(jsonobject.at("notexists"))
-        XCTAssertNil(jsonarray[10001])
-        XCTAssertNil(jsonarray.at(10001))
-        subtest {
-            // MyJSONValue
-            XCTAssertNotNil(fonts0["AdventPro"]?.array("styles"))
-            XCTAssertNotNil(fonts0["AdventPro"]?.array("styles"))
-            XCTAssertNil(fonts0["AdventPro"]?.array("notexists"))
-            XCTAssertNotNil(json.object("fonts0")!.object("AdventPro"))
-            XCTAssertNil(json.object("fonts0")!.object("notexists"))
-            XCTAssertNil(json["fonts0"]!.array("styles"))
-            XCTAssertNil(json["fonts0"]!["notexists"])
-            XCTAssertNil(jsonobject["styles"]?[10001])
-            XCTAssertTrue(jsonobject.isValid())
-            XCTAssertTrue(jsonarray.isValid())
-            XCTAssertTrue(fonts0["AdventPro"]!.isValid())
-            XCTAssertEqual(true, MyJSONValue.isValid(fonts0["AdventPro"]!.raw))
-            let invalid = NSMutableDictionary()
-            invalid["a"] = [NSSet()]
-            XCTAssertEqual(false, MyJSONValue.isValid(invalid))
-            let object = MyJSONObject()
-            let object1 = MyJSONObject(in: object, at: "object")
-            object1.put("a", MyJSONObject().put("aa", 1))
-            let array = MyJSONArray(in: object, at: "array")
-            array.put(MyJSONObject().put("a", 1)).put(MyJSONArray([1, 2, 3]))
-            XCTAssertEqual(1, object["array"]!.object(0)?.int("a"))
-            XCTAssertEqual(2, object["array"]!.array(1)?.int(1))
-            XCTAssertNil(object["array"]!.object(123))
-            XCTAssertNil(object["array"]!.array(123))
-            XCTAssertEqual(1, object["object"]!.object("a")?.int("aa"))
-            XCTAssertNil(object["object"]!.object("b"))
+        try subtest {
+            XCTAssertEqual(true, MyJSONValue(true).bool)
+            XCTAssertEqual(false, MyJSONValue(false).bool)
+            XCTAssertEqual(123, MyJSONValue(Int32(123)).int)
+            XCTAssertNil(MyJSONValue(Int32(123)).array)
+            XCTAssertEqual(-123, MyJSONValue(NSNumber(value: -123)).int)
+            XCTAssertEqual("test", MyJSONValue("test" as NSString).string)
+            XCTAssertNil(MyJSONValue("test" as NSString).at(0))
+            XCTAssertNil(MyJSONValue("test" as NSString).at(0))
+            let array = MyJSONArray()
+            array.put(1)
+            array.put(2)
+            array.put(true)
+            let b:Bool? = nil
+            array.put(b) // 3
+            array.put(Int32(32))
+            array.put(Int64(64))
+            array.put(1.23)
+            array.put(NSNumber(value: 123))
+            array.put("nsstring" as NSString)
+            array.put(MyJSONObject())
+            XCTAssertEqual(1, array[0]?.int)
+            XCTAssertEqual(true, array[2]?.bool)
+            XCTAssertEqual(true, array[3]?.isNull)
+            XCTAssertEqual(32, array[4]?.int)
+            XCTAssertEqual(Int64(64), array[5]?.int64)
+            XCTAssertEqual(1.23, array[6]?.double)
+            XCTAssertEqual(123, array[7]?.int)
+            XCTAssertEqual("nsstring", array[8]?.string)
+            XCTAssertTrue(array[9]!.isObject)
+            XCTAssertEqual(10, array.count)
+            XCTAssertEqual(0, MyJSONObject().count)
+            // XCTAssertThrowsError(try JSONValue("test").put("123"))
+            try XCTAssertThrowsError(array.put(100, 123))
         }
         try subtest {
             // MyJSONArray
@@ -850,6 +921,50 @@ class TestMyJSON01: TestBase {
                 XCTAssertEqual("2", a["notnull"]?.array?[1]?.string)
                 XCTAssertEqual(false, a.containsKey("null"))
             }
+        }
+    }
+    
+    /// Misc tests for coverage.
+    func testCoverage02() throws {
+        let data = try testResData("myjson/test01.json")
+        let json = try MyJSONObject.from(data)
+        let fonts0 = json.object("fonts0")!
+        let jsonobject = fonts0.object("AdventPro")!
+        let jsonarray = jsonobject.array("fontfaces")!
+        let stringarray = jsonobject.stringArray("styles")!
+        XCTAssertEqual(stringarray, jsonobject["styles"]!.stringArray!)
+        XCTAssertNil(jsonobject["notexists"])
+        XCTAssertNil(jsonobject.at("notexists"))
+        XCTAssertNil(jsonarray[10001])
+        XCTAssertNil(jsonarray.at(10001))
+        subtest {
+            // MyJSONValue
+            XCTAssertNotNil(fonts0["AdventPro"]?.array("styles"))
+            XCTAssertNotNil(fonts0["AdventPro"]?.array("styles"))
+            XCTAssertNil(fonts0["AdventPro"]?.array("notexists"))
+            XCTAssertNotNil(json.object("fonts0")!.object("AdventPro"))
+            XCTAssertNil(json.object("fonts0")!.object("notexists"))
+            XCTAssertNil(json["fonts0"]!.array("styles"))
+            XCTAssertNil(json["fonts0"]!["notexists"])
+            XCTAssertNil(jsonobject["styles"]?[10001])
+            XCTAssertTrue(jsonobject.isValid())
+            XCTAssertTrue(jsonarray.isValid())
+            XCTAssertTrue(fonts0["AdventPro"]!.isValid())
+            XCTAssertEqual(true, MyJSONValue.isValid(fonts0["AdventPro"]!.raw))
+            let invalid = NSMutableDictionary()
+            invalid["a"] = [NSSet()]
+            XCTAssertEqual(false, MyJSONValue.isValid(invalid))
+            let object = MyJSONObject()
+            let object1 = MyJSONObject(in: object, at: "object")
+            object1.put("a", MyJSONObject().put("aa", 1))
+            let array = MyJSONArray(in: object, at: "array")
+            array.put(MyJSONObject().put("a", 1)).put(MyJSONArray([1, 2, 3]))
+            XCTAssertEqual(1, object["array"]!.object(0)?.int("a"))
+            XCTAssertEqual(2, object["array"]!.array(1)?.int(1))
+            XCTAssertNil(object["array"]!.object(123))
+            XCTAssertNil(object["array"]!.array(123))
+            XCTAssertEqual(1, object["object"]!.object("a")?.int("aa"))
+            XCTAssertNil(object["object"]!.object("b"))
         }
     }
     
@@ -1029,9 +1144,9 @@ class TestMyJSON01: TestBase {
             defer { s.close() }
             XCTAssertNotNil(try? MyJSONArray.from(s))
         }
-        XCTAssertNil(try? MyJSONArray.from(path: testResPath(rpath: "test01.json")))
-        XCTAssertNil(try? MyJSONArray.from(path: testResPath(rpath: "testInvalidArray01.json")))
-        XCTAssertNotNil(try? MyJSONArray.from(path: testResPath(rpath: "testArray01.json")))
+        XCTAssertNil(try? MyJSONArray.from(path: testResPath("myjson/test01.json")))
+        XCTAssertNil(try? MyJSONArray.from(path: testResPath("myjson/testInvalidArray01.json")))
+        XCTAssertNotNil(try? MyJSONArray.from(path: testResPath("myjson/testArray01.json")))
     }
 
     func testJSONObjectFrom01() throws {
@@ -1068,9 +1183,9 @@ class TestMyJSON01: TestBase {
             defer { s.close() }
             XCTAssertNotNil(try? MyJSONObject.from(s))
         }
-        XCTAssertNil(try? MyJSONObject.from(path: testResPath(rpath: "testInvalidObject01.json")))
-        XCTAssertNotNil(try? MyJSONObject.from(path: testResPath(rpath: "testObject01.json")))
-        XCTAssertNil(try? MyJSONObject.from(path: testResPath(rpath: "testArray01.json")))
+        XCTAssertNil(try? MyJSONObject.from(path: testResPath("myjson/testInvalidObject01.json")))
+        XCTAssertNotNil(try? MyJSONObject.from(path: testResPath("myjson/testObject01.json")))
+        XCTAssertNil(try? MyJSONObject.from(path: testResPath("myjson/testArray01.json")))
     }
     
     func testIdentical01() throws {

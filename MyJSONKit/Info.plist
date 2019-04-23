@@ -15,9 +15,9 @@
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1</string>
+	<string>1.2</string>
 	<key>CFBundleVersion</key>
-	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<string>1.2</string>
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2019 Cplusedition. All rights reserved.</string>
 </dict>
